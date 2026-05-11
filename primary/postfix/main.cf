@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/postfix/main.cf — primary MX (web-mail.example.org)
+# /etc/postfix/main.cf - primary MX (web-mail.example.org)
 # Postfix 3.x on Ubuntu 24.04 LTS
 # =============================================================================
 
@@ -39,7 +39,7 @@ mydestination = $myhostname, localhost.$mydomain, localhost
 unknown_local_recipient_reject_code = 550
 
 # ---------------------------------------------------------------------------
-# Trusted networks — mynetworks relay unconditionally
+# Trusted networks - mynetworks relay unconditionally
 # ---------------------------------------------------------------------------
 mynetworks = 203.0.113.10/32, 127.0.0.0/8, [::1]/128, [fe80::]/64, [2001:db8:0:1::]/128
 
@@ -55,7 +55,7 @@ alias_database = hash:/etc/aliases
 recipient_delimiter = +
 
 # ---------------------------------------------------------------------------
-# SMTP banner — no version disclosure
+# SMTP banner - no version disclosure
 # ---------------------------------------------------------------------------
 smtpd_banner = $myhostname ESMTP $mydomain
 
@@ -115,7 +115,7 @@ header_checks = pcre:/etc/postfix/header_checks
 # ---------------------------------------------------------------------------
 # Milter chain
 # Ports: 11332=Rspamd  8891=OpenDKIM  8893=OpenDMARC  8894=OpenARC
-# ClamAV milter (7357 / unix socket) kept here for reference — currently
+# ClamAV milter (7357 / unix socket) kept here for reference - currently
 # handled by Rspamd antivirus module (local.d/antivirus.conf).
 # ---------------------------------------------------------------------------
 milter_default_action = accept
@@ -157,7 +157,7 @@ tls_config_file                 = /etc/postfix/tls_config.conf
 tls_config_name                 = postfix
 
 # ---------------------------------------------------------------------------
-# TLS client (outbound) — DANE enabled, requires DNSSEC
+# TLS client (outbound) - DANE enabled, requires DNSSEC
 # ---------------------------------------------------------------------------
 smtp_use_tls                  = yes
 smtp_tls_note_starttls_offer  = yes
@@ -167,7 +167,7 @@ smtp_host_lookup              = dns
 smtp_tls_security_level       = dane
 
 # ---------------------------------------------------------------------------
-# Restriction evaluation — wait until RCPT TO before applying
+# Restriction evaluation - wait until RCPT TO before applying
 # ---------------------------------------------------------------------------
 smtpd_delay_reject = yes
 
@@ -218,8 +218,8 @@ smtpd_sender_restrictions =
     permit
 
 # ---------------------------------------------------------------------------
-# Recipient restrictions — the main anti-spam policy chain
-# Abusix Mail Intelligence (primary RBL provider since 2023 — Spamhaus DQS
+# Recipient restrictions - the main anti-spam policy chain
+# Abusix Mail Intelligence (primary RBL provider since 2023 - Spamhaus DQS
 # was evaluated but retired due to false-positive on a known partner domain
 # and disproportionate cost for this traffic volume).
 # ---------------------------------------------------------------------------
@@ -245,7 +245,7 @@ rbl_reply_maps = texthash:/etc/postfix/rbl_reply_map
 transport_maps = hash:/etc/postfix/transport
 
 # ---------------------------------------------------------------------------
-# Postscreen — first line of defence on port 25
+# Postscreen - first line of defence on port 25
 # Abusix feeds weighted at *2; Barracuda and SpamCop at *1.
 # DNSWL trusted senders get -1 (whitelist offset).
 # ---------------------------------------------------------------------------
@@ -285,7 +285,7 @@ smtpd_tls_mandatory_ciphers = medium
 smtp_tls_exclude_ciphers  = EXP, LOW, DES, 3DES, SSLv2, MD5, DES+MD5, RC4, aNULL, eNULL, EXPORT, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA, DHE-RSA-CAMELLIA256-SHA, DHE-RSA-CAMELLIA128-SHA
 smtpd_tls_exclude_ciphers = EXP, LOW, DES, 3DES, SSLv2, MD5, DES+MD5, RC4, aNULL, eNULL, EXPORT, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA, DHE-RSA-CAMELLIA256-SHA, DHE-RSA-CAMELLIA128-SHA
 
-# TLS 1.2 minimum — TLS 1.0 and 1.1 explicitly excluded
+# TLS 1.2 minimum - TLS 1.0 and 1.1 explicitly excluded
 smtpd_tls_mandatory_protocols = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
 smtpd_tls_protocols           = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
 smtp_tls_mandatory_protocols  = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
