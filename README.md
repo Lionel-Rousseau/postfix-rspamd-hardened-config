@@ -5,7 +5,7 @@
 > SPF/DKIM/DMARC/ARC chain, DANE + MTA-STS, postscreen, milter-based
 > Rspamd integration, and tuned anti-spam policies. Continuously
 > maintained since 2001 (sendmail → Postfix in 2003, then through
-> SpamAssassin → Rspamd and Spamhaus → Spamhaus DQS migrations → Abusix).
+> SpamAssassin → Rspamd and Spamhaus → Spamhaus DQS → Abusix migrations).
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Docs: CC-BY-SA 4.0](https://img.shields.io/badge/docs-CC--BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
@@ -22,7 +22,10 @@ goes back to 2001, several rewrites and migrations later - see
 [`docs/real-incidents.md`](docs/real-incidents.md) for the migration
 history). It serves a 24/7 e-commerce activity with international
 exchanges, processes ~170 messages per day, and has run with **zero
-security incidents** and **zero blacklisting** over its lifetime.
+security incidents** and **zero direct blacklisting** over its lifetime.
+It faced a few IP block blacklisting (servers hosted at OVH in multihosting 
+environnement) and had to declare/whitelist servers IP at services like dnswl.org
+and others.
 
 The platform's architecture is documented in the companion repository
 [`Lionel-Rousseau/laflanelle-secops-architecture`](https://github.com/Lionel-Rousseau/laflanelle-secops-architecture).
@@ -48,7 +51,7 @@ The backup chain that protects this stack lives in
 - **ClamAV milter** for attachment scanning before Rspamd composites.
 - **Custom Rspamd settings module** entries (`local.d/perso.conf`)
   that turn off network-based RBLs and Bayes for our own
-  `logwatch`-style local cron mail, false-positive churn killer.
+  `logwatch`-style local cron mail, false-positive noise killer.
 - **Geo-blocking + threat-feed aggregation** at the iptables layer
   via `update-datashield.sh`, refreshed daily, giving postscreen a
   cleaner population to deal with.
@@ -57,7 +60,7 @@ The backup chain that protects this stack lives in
 
 ```
 postfix-rspamd-hardened-config/
-├── README.md                            you are here
+├── README.md                            This document
 ├── LICENSE                              MIT for code, CC-BY-SA 4.0 for docs
 ├── docs/
 │   ├── architecture.md                  primary + secondary topology
@@ -68,12 +71,12 @@ postfix-rspamd-hardened-config/
 │   ├── ssh-hardening.md                 actual SSH protection layers
 │   └── real-incidents.md                operator history + migration story
 ├── primary/                             Internet-facing primary MX
-│   ├── postfix/                         main.cf, master.cf, maps, .example stubs
+│   ├── postfix/                         main.cf, master.cf, maps, .example templates
 │   ├── rspamd/
 │   │   ├── local.d/                     ★ all the genuine customisations
 │   │   ├── scores.d/                    representative score overrides + README
-│   │   └── maps.d/                      curated maps (PII-laden ones replaced
-│   │                                    with .example stubs)
+│   │   └── maps.d/                      curated maps (PII-sensitive ones replaced
+│   │                                    with .example templates)
 │   ├── dovecot/
 │   │   ├── conf.d/                      hardening overrides (4 essential files)
 │   │   └── sieve/                       Bayes training pipeline
@@ -109,8 +112,7 @@ If you have ten minutes and want to evaluate this work:
 5. **[`fail2ban/jail.local`](fail2ban/jail.local)** + **[`fail2ban/jail.d/custom.conf`](fail2ban/jail.d/custom.conf)**
    : the actual jail configuration, with custom postfix-related filters.
 6. **[`primary/scripts/postfix-audit.sh`](primary/scripts/postfix-audit.sh)**
-   : operational maturity signal: an audit script that walks the
-   configuration looking for common misconfigurations.
+   : an audit script that walks the configuration looking for common misconfigurations.
 7. **[`docs/real-incidents.md`](docs/real-incidents.md)** : the
    operator's notebook. Three migrations, two outages avoided, and
    one near-miss with a DNSBL provider deprecation.
