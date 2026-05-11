@@ -18,22 +18,22 @@ exists for **continuity**, not capacity.
                       │  Internet                        │
                       └──────────────┬───────────────────┘
                                      │
-                      ┌──────────────▼───────────────────┐
-                      │  web-mail.example.org  (priority 10) │
+                      ┌──────────────▼──────────────────────┐
+                      │  web-mail.example.org  (priority 10)│
                       │  ─────────────────────────────────  │
                       │  iptables (datashield aggregator)   │
-                      │   ↓                                  │
+                      │   ↓                                 │
                       │  Postfix postscreen :25 / :465      │
-                      │   ↓                                  │
-                      │  Postfix smtpd                       │
-                      │   ↓                                  │
+                      │   ↓                                 │
+                      │  Postfix smtpd                      │
+                      │   ↓                                 │
                       │  Rspamd (milter, port 11332)        │
-                      │   ↓                                  │
-                      │  Postfix queue                       │
-                      │   ↓                                  │
-                      │  Dovecot LMTP                        │
-                      │   ↓                                  │
-                      │  /home/vmail/<domain>/<user>/        │
+                      │   ↓                                 │
+                      │  Postfix queue                      │
+                      │   ↓                                 │
+                      │  Dovecot LMTP                       │
+                      │   ↓                                 │
+                      │  /home/vmail/<domain>/<user>/       │
                       └─────────────────────────────────────┘
 
                       ┌─────────────────────────────────────┐
@@ -41,9 +41,9 @@ exists for **continuity**, not capacity.
                       │  (priority 20 - backup)             │
                       │  ─────────────────────────────────  │
                       │  Postfix smtpd (relay-only)         │
-                      │   ↓                                  │
+                      │   ↓                                 │
                       │  Postfix queue (deferred)           │
-                      │   ↓ when primary is reachable        │
+                      │   ↓ when primary is reachable       │
                       │  smtp client → web-mail:25          │
                       └─────────────────────────────────────┘
 ```
