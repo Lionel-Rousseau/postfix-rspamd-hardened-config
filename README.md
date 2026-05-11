@@ -74,7 +74,6 @@ postfix-rspamd-hardened-config/
 │   ├── postfix/                         main.cf, master.cf, maps, .example templates
 │   ├── rspamd/
 │   │   ├── local.d/                     ★ all the genuine customisations
-│   │   ├── scores.d/                    representative score overrides + README
 │   │   └── maps.d/                      curated maps (PII-sensitive ones replaced
 │   │                                    with .example templates)
 │   ├── dovecot/
@@ -106,14 +105,11 @@ If you have ten minutes and want to evaluate this work:
 3. **[`primary/rspamd/local.d/perso.conf`](primary/rspamd/local.d/perso.conf)**
    : the custom settings module entry that solves the logwatch
    false-positive problem. Small but illustrative.
-4. **[`primary/rspamd/scores.d/`](primary/rspamd/scores.d/)** : four
-   tuned score-override files representative of the calibration
-   pattern; see the directory's README for the procedure.
-5. **[`fail2ban/jail.local`](fail2ban/jail.local)** + **[`fail2ban/jail.d/custom.conf`](fail2ban/jail.d/custom.conf)**
+4. **[`fail2ban/jail.local`](fail2ban/jail.local)** + **[`fail2ban/jail.d/custom.conf`](fail2ban/jail.d/custom.conf)**
    : the actual jail configuration, with custom postfix-related filters.
-6. **[`primary/scripts/postfix-audit.sh`](primary/scripts/postfix-audit.sh)**
+5. **[`primary/scripts/postfix-audit.sh`](primary/scripts/postfix-audit.sh)**
    : an audit script that walks the configuration looking for common misconfigurations.
-7. **[`docs/real-incidents.md`](docs/real-incidents.md)** : the
+6. **[`docs/real-incidents.md`](docs/real-incidents.md)** : the
    operator's notebook. Three migrations, two outages avoided, and
    one near-miss with a DNSBL provider deprecation.
 
