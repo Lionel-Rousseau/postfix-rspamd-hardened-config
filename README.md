@@ -56,6 +56,8 @@ The backup chain that protects this stack lives in
   via `update-datashield.sh`, refreshed daily, giving postscreen a
   cleaner population to deal with.
 
+Configuration independently verified by [MECSA (EU/JRC)](https://mecsa.jrc.ec.europa.eu/en/finderRequest/ecc85963443be1824b5dfd2847d10af5) — TLSv1.3, DANE, MTA-STS, SPF, DKIM all passing as of May 2026.
+
 ## What is in this repository
 
 ```
