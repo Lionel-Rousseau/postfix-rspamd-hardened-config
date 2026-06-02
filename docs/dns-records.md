@@ -32,8 +32,8 @@ The TLSA record `3 1 1 <hash>` means:
 
 | Field | Value | Meaning |
 |---|---|---|
-| Usage | 3 | DANE-EE — the certificate *itself* must match, no CA chain needed |
-| Selector | 1 | SubjectPublicKeyInfo — hash the **public key**, not the full certificate |
+| Usage | 3 | DANE-EE, the certificate *itself* must match, no CA chain needed |
+| Selector | 1 | SubjectPublicKeyInfo, hash the **public key**, not the full certificate |
 | Matching | 1 | SHA-256 |
 
 Because selector=1 hashes only the **public key** (not the certificate), the
@@ -44,19 +44,19 @@ does not change**. This is the key insight for maintenance strategy.
 
 Let's Encrypt certificates expire after 90 days. Certbot renews at ~60 days
 and, by default, **generates a new key on each renewal**. When the key
-changes, the TLSA hash changes, and the DNS record must be updated — ideally
+changes, the TLSA hash changes, and the DNS record must be updated, ideally
 *before* the new certificate is deployed.
 
 Two strategies, from simplest to most robust:
 
 ---
 
-### Strategy A — Key reuse (production choice, zero maintenance)
+### Strategy A - Key reuse (production choice, zero maintenance)
 
 Both MX hosts use ECDSA P-256 certificates (`key_type = ecdsa`,
 `elliptic_curve = secp256r1`) with `reuse_key = True`. The private key
 is never regenerated on renewal, so the TLSA hash is stable for the
-lifetime of the key — the DNS record is set once and never touched.
+lifetime of the key - the DNS record is set once and never touched.
 
 See [`docs/examples/certbot-renewal.conf.example`](examples/certbot-renewal.conf.example)
 for the full renewal configuration.
@@ -84,14 +84,14 @@ is coherent across the entire TLS stack.
 
 **Trade-off:** the private key never rotates. For SMTP, TLS session
 confidentiality comes from ECDHE (ephemeral keys), not from the certificate
-key — so a long-lived certificate key does not compromise past session
+key, so a long-lived certificate key does not compromise past session
 confidentiality. The risk is limited to impersonation if the key is
 extracted. For a small mail platform without a dedicated PKI rotation
 procedure, this is the right operational choice.
 
 ---
 
-### Strategy B — Automated TLSA update via Infomaniak API
+### Strategy B - Automated TLSA update via Infomaniak API
 
 For environments where key rotation is required (compliance, policy),
 a certbot deploy hook can update TLSA records automatically via the
@@ -114,7 +114,7 @@ published after production validation.
 
 ---
 
-## SPF — multi-domain strategy
+## SPF - multi-domain strategy
 
 With 12 managed domains, each needs its own SPF record. The critical
 constraint is **RFC 7208 §4.6.4: maximum 10 DNS lookups** per SPF
@@ -128,7 +128,7 @@ a lookup.
 - The primary MX IP and IPv6 prefix are listed explicitly
 - One `include:` for the upstream transactional relay (newsletter / e-commerce platform)
 - No `ptr` mechanism (deprecated, expensive, unreliable)
-- Hard fail (`-all`) on all domains — no `~all` softfail
+- Hard fail (`-all`) on all domains, no `~all` softfail
 
 **Example record:**
 
@@ -204,7 +204,7 @@ DNSSEC-signed DNS *and* a certificate from the correct CA.
 
 ## DNSSEC
 
-DNSSEC is managed at the registrar level. It is a prerequisite for DANE —
+DNSSEC is managed at the registrar level. It is a prerequisite for DANE,
 without DNSSEC, TLSA records have no cryptographic binding and DANE
 provides no security guarantee.
 
