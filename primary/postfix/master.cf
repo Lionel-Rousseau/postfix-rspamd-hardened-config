@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/postfix/master.cf — primary MX (web-mail.example.org)
+# /etc/postfix/master.cf - primary MX (web-mail.example.org)
 # Postfix 3.x on Ubuntu 24.04 LTS
 # =============================================================================
 
@@ -8,7 +8,7 @@
 #               (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
 
-# --- Port 25 inbound — postscreen front-end ---
+# --- Port 25 inbound - postscreen front-end ---
 # postscreen handles DNSBL pre-scoring and PREGREET trap before smtpd.
 # dnsblog/tlsproxy support postscreen async DNS lookups and TLS proxying.
 smtp      inet  n       -       y       -       1       postscreen
@@ -16,11 +16,11 @@ smtpd     pass  -       -       y       -       -       smtpd
 dnsblog   unix  -       -       y       -       0       dnsblog
 tlsproxy  unix  -       -       y       -       0       tlsproxy
 
-# --- Port 587 — submission (STARTTLS / RFC 6409) ---
+# --- Port 587 - submission (STARTTLS / RFC 6409) ---
 # TLS required (encrypt-level). SASL required.
 # smtpd_relay_restrictions: Abusix authbl checked BEFORE permit_sasl_authenticated
 # to reject IPs known for authenticated spam submission even if credentials are valid.
-# helo/sender/recipient restrictions cleared — handled upstream by the policy.
+# helo/sender/recipient restrictions cleared, handled upstream by the policy.
 submission inet n       -       n       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
@@ -33,9 +33,9 @@ submission inet n       -       n       -       -       smtpd
   -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
   -o milter_macro_daemon_name=ORIGINATING
 
-# --- Port 465 — submissions (implicit TLS / RFC 8314) ---
+# --- Port 465 - submissions (implicit TLS / RFC 8314) ---
 # RFC 8314 service name "submissions" (not the legacy "smtps").
-# TLS wrapper mode — TLS negotiated before any SMTP dialogue.
+# TLS wrapper mode : TLS negotiated before any SMTP dialogue.
 # Same Abusix authbl pre-authentication check as port 587.
 submissions inet n      -       n       -       -       smtpd
   -o syslog_name=postfix/submissions
