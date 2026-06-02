@@ -1,9 +1,9 @@
 # =============================================================================
-# /etc/opendkim/KeyTable — DKIM key lookup table
+# /etc/opendkim/KeyTable - DKIM key lookup table
 #
 # Format: <selector>._domainkey.<domain>  <domain>:<selector>:<keyfile>
 #
-# All keys are RSA 2048-bit except example.kr (1024-bit — registrar limit).
+# All keys are RSA 2048-bit except example.kr (1024-bit registrar limit).
 # Keys are rotated annually; the selector encodes the year (e.g. "mail").
 # Anonymised: real domain names replaced with example.* placeholders.
 # =============================================================================
@@ -21,7 +21,7 @@ mail._domainkey.example-shop.net  example-shop.net:mail:/etc/opendkim/keys/examp
 mail._domainkey.example-commerce.fr  example-commerce.fr:mail:/etc/opendkim/keys/example-commerce.fr/mail.private
 mail._domainkey.example-commerce.com example-commerce.com:mail:/etc/opendkim/keys/example-commerce.com/mail.private
 mail._domainkey.example-marine.net   example-marine.net:mail:/etc/opendkim/keys/example-marine.net/mail.private
-# RSA 1024-bit — registrar (Korean provider) does not support longer keys
+# RSA 1024-bit registrar (Korean provider) does not support longer keys
 mail._domainkey.example.kr        example.kr:mail:/etc/opendkim/keys/example.kr/mail.private
 mail._domainkey.example.aero      example.aero:mail:/etc/opendkim/keys/example.aero/mail.private
 mail._domainkey.example.sarl      example.sarl:mail:/etc/opendkim/keys/example.sarl/mail.private
