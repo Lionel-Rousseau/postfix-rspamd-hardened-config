@@ -82,13 +82,13 @@ for the security trade-offs behind key choices.
    → `check_client_access` → `check_helo_access` →
    `check_sender_access` → `reject_unknown_*` → DNSBL fallback.
 4. **Milter chain** processes the message in order:
-   - **Rspamd** (port 11332) — scores and returns `reject` / `add
+   - **Rspamd** (port 11332) - scores and returns `reject` / `add
      header` / `rewrite subject` / `greylist` / `accept`. Greylist via
      Redis, lifetime 1 h.
-   - **OpenDKIM** (port 8891) — verifies DKIM signatures on inbound.
-   - **OpenDMARC** (port 8893) — evaluates DMARC alignment and
+   - **OpenDKIM** (port 8891) - verifies DKIM signatures on inbound.
+   - **OpenDMARC** (port 8893) - evaluates DMARC alignment and
      disposition.
-   - **OpenARC** (port 8894) — validates the inbound ARC chain.
+   - **OpenARC** (port 8894) - validates the inbound ARC chain.
 5. Accepted mail goes to the **Postfix queue** then **Dovecot LMTP**
    for final delivery.
 
@@ -97,12 +97,12 @@ for the security trade-offs behind key choices.
 1. Authenticated submission on **port 587 (STARTTLS)** or **465
    (implicit TLS)** via `smtpd_tls_security_level=encrypt`.
 2. The same four-milter chain runs on outbound:
-   - **Rspamd** — final content filter against accidental malware
+   - **Rspamd** : final content filter against accidental malware
      forwarding.
-   - **OpenDKIM** — DKIM signing, one key per managed domain
+   - **OpenDKIM** : DKIM signing, one key per managed domain
      (RSA 2048-bit, annual rotation).
-   - **OpenDMARC** — outbound DMARC reporting.
-   - **OpenARC 1.3.0** — seals the ARC chain when the message transits
+   - **OpenDMARC** : outbound DMARC reporting.
+   - **OpenARC 1.3.0** : seals the ARC chain when the message transits
      multiple administrative domains.
 3. Postfix `smtp` client honours **DANE** (TLSA records) on
    destinations that publish them under DNSSEC, and falls back to
@@ -112,7 +112,7 @@ for the security trade-offs behind key choices.
 
 The secondary MX accepts mail when the primary is unreachable, queues
 it, and delivers to the primary as soon as it comes back. Configuration
-is deliberately minimal — see
+is deliberately minimal, see
 [`secondary/postfix/main.cf`](../secondary/postfix/main.cf) and
 [`secondary/postfix/master.cf`](../secondary/postfix/master.cf).
 It does **not** run Rspamd, Dovecot, or any local user-facing service:
