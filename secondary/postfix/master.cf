@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/postfix/master.cf — secondary MX (mx-secondary.example.org)
+# /etc/postfix/master.cf - secondary MX (mx-secondary.example.org)
 # Postfix 3.x on Ubuntu 24.04 LTS
 #
 # Role: relay-only backup MX. Accepts on port 25, queues, forwards to primary
@@ -11,7 +11,7 @@
 #               (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
 
-# --- Port 25 inbound — direct smtpd (no postscreen on secondary) ---
+# --- Port 25 inbound - direct smtpd (no postscreen on secondary) ---
 smtp      inet  n       -       y       -       -       smtpd
 
 # --- Ports 587 (submission) and 465 (smtps) intentionally disabled ---
