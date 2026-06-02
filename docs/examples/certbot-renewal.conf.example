@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/letsencrypt/renewal/<hostname>.conf — certbot renewal configuration
+# /etc/letsencrypt/renewal/<hostname>.conf : certbot renewal configuration
 #
 # Both MX hosts use identical parameters. Key choices:
 #
@@ -8,14 +8,14 @@
 #                             preferences configured in Postfix (X25519,
 #                             prime256v1) and Dovecot (X25519, prime256v1).
 #
-#   elliptic_curve = secp256r1  P-256 — widely supported, NIST-approved,
+#   elliptic_curve = secp256r1  P-256 widely supported, NIST-approved,
 #                              same curve used as tls_eecdh_strong_curve in
 #                              Postfix and first in Dovecot's ssl_curve_list.
 #
 #   reuse_key = True          The private key is reused on each renewal.
 #                             Combined with TLSA selector 1 (SubjectPublicKeyInfo),
 #                             this means DANE TLSA records are stable for the
-#                             lifetime of the key — zero maintenance.
+#                             lifetime of the key, zero maintenance.
 #                             See docs/dns-records.md — Strategy A.
 #
 #   authenticator = nginx     HTTP-01 challenge served by the nginx instance
