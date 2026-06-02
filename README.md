@@ -223,7 +223,7 @@ Every file was reviewed and validated by the author before publication.
 
 ## About
 
-Maintained by **Lionel Rousseau** — Linux administrator and SecOps
+Maintained by **Lionel Rousseau** - Linux administrator and SecOps
 practitioner, CompTIA Security+ and CySA+ certified.
 [`lionel@rousseau.kr`](mailto:lionel@rousseau.kr) ·
 [LinkedIn](https://www.linkedin.com/in/lionel-rousseau-kr/) ·

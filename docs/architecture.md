@@ -63,9 +63,10 @@ exists for **continuity**, not capacity.
 | `_smtp._tls` (TLS-RPT)                  | Aggregate TLS-RPT to a dedicated mailbox    |
 | `CAA`                                   | `letsencrypt.org` only                      |
 
-See [`hardening-decisions.md`](hardening-decisions.md) for the
-rationale behind key choices (DANE vs MTA-STS, TLS policy on port 25,
-DKIM key sizes).
+See [`dns-records.md`](dns-records.md) for the full record inventory,
+TLSA renewal strategy, SPF multi-domain approach, MTA-STS policy format,
+and CAA rationale. See [`hardening-decisions.md`](hardening-decisions.md)
+for the security trade-offs behind key choices.
 
 ## Inbound flow (primary)
 
