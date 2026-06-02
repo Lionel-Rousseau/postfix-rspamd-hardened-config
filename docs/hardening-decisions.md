@@ -8,11 +8,11 @@ This document explains the non-obvious security and architectural choices made i
 
 **Setting:** `smtpd_tls_security_level = may`
 
-Requiring TLS (`encrypt`) on port 25 would reject all inbound mail from MTAs that do not support STARTTLS — a significant fraction of legitimate servers (legacy infrastructure, small ISPs, servers in regions with low TLS adoption). The accepted practice for MTA-to-MTA SMTP on port 25 is to *offer* TLS opportunistically and let DANE enforce it on a per-destination basis on the outbound side.
+Requiring TLS (`encrypt`) on port 25 would reject all inbound mail from MTAs that do not support STARTTLS, a significant fraction of legitimate servers (legacy infrastructure, small ISPs, servers in regions with low TLS adoption). The accepted practice for MTA-to-MTA SMTP on port 25 is to *offer* TLS opportunistically and let DANE enforce it on a per-destination basis on the outbound side.
 
 The actual TLS enforcement strategy here is:
-- **Inbound port 25:** `may` — accept from all, opportunistically upgrade to TLS
-- **Outbound:** `smtp_tls_security_level = dane` — enforce TLS with certificate validation when the remote domain publishes TLSA records in DNSSEC-signed DNS; fall back to opportunistic TLS otherwise
+- **Inbound port 25:** `may` : accept from all, opportunistically upgrade to TLS
+- **Outbound:** `smtp_tls_security_level = dane` : enforce TLS with certificate validation when the remote domain publishes TLSA records in DNSSEC-signed DNS; fall back to opportunistic TLS otherwise
 
 This combination provides strong outbound TLS guarantees without breaking inbound compatibility.
 
@@ -32,20 +32,20 @@ The trade-off is accepted: a brief Rspamd outage lets some spam through rather t
 
 Spamhaus DQS was evaluated and trialled but retired from this configuration for two reasons:
 
-1. **False positive on a known partner domain** — a legitimate commercial partner's sending IP was listed, causing delivery failures that required manual whitelisting and monitoring overhead.
-2. **Cost disproportionate to traffic volume** — at ~170 messages/day, the per-query pricing of Spamhaus DQS is not justified compared to Abusix Mail Intelligence, which offers equivalent coverage with better accuracy for this traffic profile.
+1. **False positive on a known partner domain** : a legitimate commercial partner's sending IP was listed, causing delivery failures that required manual whitelisting and monitoring overhead.
+2. **Cost disproportionate to traffic volume** : at 150/200 messages/day, the per-query pricing of Spamhaus DQS is not justified compared to Abusix Mail Intelligence, which offers equivalent coverage with better accuracy for this traffic profile.
 
 Abusix zones in use:
 
 | Zone | Postfix context | Rspamd context | Purpose |
 |---|---|---|---|
-| `black` | postscreen `*2` | — | Known spam sources |
-| `exploit` | postscreen `*2` | — | Exploited/compromised hosts |
-| `dynamic` | postscreen `*1` | — | Dynamic/residential IPs |
+| `black` | postscreen `*2` | - | Known spam sources |
+| `exploit` | postscreen `*2` | - | Exploited/compromised hosts |
+| `dynamic` | postscreen `*1` | - | Dynamic/residential IPs |
 | `dblack` | `reject_rhsbl_helo/sender` | `RBL_AMI_DBLACK` | Domain-based blacklist |
-| `noip` | — | `RBL_AMI_NOIP` | IPs with no PTR record |
-| `nod` | — | `RBL_AMI_NOD` | Newly observed domains |
-| `authbl` | `master.cf` (587/465) | — | Authenticated spam senders |
+| `noip` | - | `RBL_AMI_NOIP` | IPs with no PTR record |
+| `nod` | - | `RBL_AMI_NOD` | Newly observed domains |
+| `authbl` | `master.cf` (587/465) | - | Authenticated spam senders |
 
 ---
 
@@ -53,7 +53,7 @@ Abusix zones in use:
 
 **Setting:** `reject_rbl_client <ABUSIX-API-KEY>.authbl.mail.abusix.zone` in `smtpd_relay_restrictions` on both submission ports, evaluated *before* `permit_sasl_authenticated`.
 
-The standard approach (`permit_sasl_authenticated, reject`) allows any client with valid credentials to submit mail. The `authbl` zone lists IPs that are known to be used for authenticated spam campaigns — compromised accounts, credential-stuffed logins. Checking this zone before the SASL permit means that even a valid username/password is not sufficient if the connecting IP is actively used for spam submission at the time of connection.
+The standard approach (`permit_sasl_authenticated, reject`) allows any client with valid credentials to submit mail. The `authbl` zone lists IPs that are known to be used for authenticated spam campaigns, compromised accounts, credential-stuffed logins. Checking this zone before the SASL permit means that even a valid username/password is not sufficient if the connecting IP is actively used for spam submission at the time of connection.
 
 This pre-authentication RBL check is specific to the submission ports and not applied on port 25 (where SASL is not the relevant control).
 
@@ -73,7 +73,7 @@ This mitigates Logjam-class downgrade attacks (CVE-2015-4000) where a MITM force
 
 **Settings:** `smtpd_tls_ciphers = medium` (inbound), `smtp_tls_ciphers = high` (outbound)
 
-Using `high` grade for inbound (port 25) would reject connections from MTAs that only support 128-bit ciphers — still common on older infrastructure. `medium` includes AES-128-GCM and ChaCha20, which are secure; it merely adds tolerance for peers that cannot negotiate AES-256.
+Using `high` grade for inbound (port 25) would reject connections from MTAs that only support 128-bit ciphers, still common on older infrastructure. `medium` includes AES-128-GCM and ChaCha20, which are secure; it merely adds tolerance for peers that cannot negotiate AES-256.
 
 On the outbound side, `high` is safe: we control the TLS negotiation and can afford to prefer the strongest available cipher. Peers that cannot negotiate a high-grade cipher will fall back to opportunistic TLS per the `dane` policy.
 
@@ -81,7 +81,7 @@ On the outbound side, `high` is safe: we control the TLS negotiation and can aff
 
 ## DANE + MTA-STS: both, not either
 
-DANE (via TLSA records in DNSSEC) and MTA-STS serve the same goal — prevent STARTTLS downgrade attacks — but through different mechanisms:
+DANE (via TLSA records in DNSSEC) and MTA-STS serve the same goal, prevent STARTTLS downgrade attacks but through different mechanisms:
 
 - **DANE** requires DNSSEC on both sides. Provides cryptographic proof of the TLS certificate via DNS. Zero reliance on the CA ecosystem.
 - **MTA-STS** works over HTTPS with a cached policy file. Does not require DNSSEC. Protects senders whose DNS resolver does not validate DNSSEC.
