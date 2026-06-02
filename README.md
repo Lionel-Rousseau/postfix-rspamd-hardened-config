@@ -1,4 +1,4 @@
-# Production Mail Infrastructure — Postfix / Rspamd / Dovecot, Hardened
+# Production Mail Infrastructure : Postfix / Rspamd / Dovecot, Hardened
 
 > Hardened Postfix + Dovecot + Rspamd configuration set for a small
 > production mail platform with primary and secondary MX, full
@@ -64,12 +64,12 @@ The backup chain that protects this stack lives in
 
 Configuration independently verified by the
 [MECSA (EU/JRC)](https://mecsa.jrc.ec.europa.eu/en/finderRequest/ecc85963443be1824b5dfd2847d10af5)
-tool — **100/100 on all 8 criteria** (StartTLS, X509, SPF, DKIM, DMARC,
+tool : **100/100 on all 8 criteria** (StartTLS, X509, SPF, DKIM, DMARC,
 DANE, DNSSEC, MTA-STS), **5.0/5 on all 3 dimensions** (Confidential
 Delivery, Phishing & Identity Theft, Integrity of Messages), both MX
-records negotiating TLSv1.3 / TLS_AES_256_GCM_SHA384 — as of May 2026.
+records negotiating TLSv1.3 / TLS_AES_256_GCM_SHA384 as of May 2026.
 
-![MECSA 5.0/5 — 100/100 on all 8 criteria — May 2026](docs/mecsa-report.png)
+![MECSA 5.0/5 - 100/100 on all 8 criteria - May 2026](docs/mecsa-report.png)
 
 ## What is in this repository
 
@@ -83,17 +83,17 @@ postfix-rspamd-hardened-config/
 │   ├── dns-records.md                 Full record inventory, TLSA maintenance strategy
 │   │                                  (key reuse vs. API automation), SPF, MTA-STS, CAA
 │   ├── hardening-decisions.md         Rationale for 11 non-obvious choices
-│   ├── mecsa-report.png               MECSA 5.0/5 — 100/100 all criteria (May 2026)
+│   ├── mecsa-report.png               MECSA 5.0/5 - 100/100 all criteria (May 2026)
 │   └── examples/
-│       ├── certbot-renewal.conf.example  Renewal config — ECDSA P-256, reuse_key
+│       ├── certbot-renewal.conf.example  Renewal config - ECDSA P-256, reuse_key
 │       └── perso.conf.example            Rspamd local.d template snippets
 ├── primary/
-│   ├── openarc.conf                   OpenARC 1.3.0 — ARC sealing, RSA 2048-bit
+│   ├── openarc.conf                   OpenARC 1.3.0 - ARC sealing, RSA 2048-bit
 │   ├── dovecot/
-│   │   └── dovecot.conf               Dovecot 2.4.2 — IMAP/SASL/LMTP + IMAPSieve
+│   │   └── dovecot.conf               Dovecot 2.4.2 - IMAP/SASL/LMTP + IMAPSieve
 │   │                                  Bayes training pipeline
 │   ├── opendkim/
-│   │   ├── opendkim.conf              OpenDKIM — 12-domain signing, DNSSEC, 1024/2048
+│   │   ├── opendkim.conf              OpenDKIM - 12-domain signing, DNSSEC, 1024/2048
 │   │   ├── KeyTable                   Per-domain key paths with registrar-limit note
 │   │   └── SigningTable               Wildcard *@domain → selector mapping
 │   ├── postfix/
@@ -107,7 +107,7 @@ postfix-rspamd-hardened-config/
 │   │       ├── milter_headers.conf    X-Spam-Score + Authentication-Results headers
 │   │       ├── perso.conf             Logwatch false-positive suppression
 │   │       ├── rbl.conf               Abusix (active) + Spamhaus DQS (retired, commented)
-│   │       └── settings.conf          Root@ notification exceptions — primary + secondary
+│   │       └── settings.conf          Root@ notification exceptions - primary + secondary
 │   └── scripts/
 │       └── update-datashield.sh       Daily IP threat-feed → atomic ipset swap
 ├── secondary/
@@ -116,7 +116,7 @@ postfix-rspamd-hardened-config/
 │       └── master.cf                  Ports 587/465 disabled with rationale
 └── fail2ban/
     ├── jail.d/
-    │   └── custom.conf                All active jails — progressive ban, Cloudflare,
+    │   └── custom.conf                All active jails - progressive ban, Cloudflare,
     │                                  subnet-level blocking, postscreen escalation
     ├── filter.d/
     │   ├── postscreen-aggr.conf       PREGREET + HANGUP event detection
@@ -130,35 +130,35 @@ postfix-rspamd-hardened-config/
 
 If you have ten minutes and want to evaluate this work:
 
-1. **[`primary/postfix/main.cf`](primary/postfix/main.cf)** — the
+1. **[`primary/postfix/main.cf`](primary/postfix/main.cf)** - the
    core. Read the `smtpd_*_restrictions` chains (six stages, ordered
    by evaluation cost), the postscreen DNSBL scoring block (Abusix
    feeds weighted at ×2, whitelist at −1), and the TLS hardening
    section (FFDHE4096, cipher exclusions, protocol floor).
 
-2. **[`primary/postfix/master.cf`](primary/postfix/master.cf)** — note
+2. **[`primary/postfix/master.cf`](primary/postfix/master.cf)** - note
    the Abusix `authbl` check in `smtpd_relay_restrictions` on both
    ports 587 and 465: IPs known for authenticated spam are blocked
    *before* SASL credentials are validated.
 
 3. **[`primary/rspamd/local.d/rbl.conf`](primary/rspamd/local.d/rbl.conf)**
-   — active Abusix configuration plus the complete Spamhaus DQS
+   - active Abusix configuration plus the complete Spamhaus DQS
    configuration in comments. Read both sections to understand the
    migration decision (documented in `hardening-decisions.md`).
 
 4. **[`fail2ban/jail.d/custom.conf`](fail2ban/jail.d/custom.conf)**
-   — layered automated defence: progressive ban schedules with
+   - layered automated defence: progressive ban schedules with
    multipliers, postscreen event escalation, /24 subnet banning when
    the same network generates multiple offenders, and dual
    iptables + Cloudflare blocking on operator-triggered bans.
 
 5. **[`primary/dovecot/dovecot.conf`](primary/dovecot/dovecot.conf)**
-   — IMAP/SASL/LMTP stack. Note the IMAPSieve Bayes training pipeline:
+   - IMAP/SASL/LMTP stack. Note the IMAPSieve Bayes training pipeline:
    moving messages to/from the Junk folder automatically triggers
    Rspamd classifier training via external Sieve scripts.
 
 6. **[`docs/hardening-decisions.md`](docs/hardening-decisions.md)**
-   — explains 11 choices that might otherwise look like omissions or
+   - explains 11 choices that might otherwise look like omissions or
    misconfiguration: why `smtpd_tls_security_level = may` on port 25,
    why both DANE and MTA-STS, why the secondary has no milters, why
    `authbl` is checked before `permit_sasl_authenticated`, and more.
@@ -172,33 +172,33 @@ addresses have been replaced with documentation placeholders
 `admin@example.org`). The control flow, hardening choices, scoring
 decisions, and operational patterns are unchanged.
 
-Abusix API keys appear as `<ABUSIX-API-KEY>` throughout — the same
+Abusix API keys appear as `<ABUSIX-API-KEY>` throughout. The same
 key prefix is used in `primary/postfix/main.cf` (postscreen DNSBL
 sites, `reject_rhsbl_*`), `primary/postfix/master.cf` (`authbl` on
 submission ports), and `primary/rspamd/local.d/rbl.conf`.
 
 Files containing personal or operational data (the actual
 `sender_checks`, `transport`, `rbl_override`, DKIM whitelist maps,
-etc.) are excluded from this repository — see `.gitignore` for the
+etc.) are excluded from this repository, see `.gitignore` for the
 complete list.
 
 ## What is NOT in this repository
 
 By design:
 
-- **DKIM private keys** — RSA 2048-bit per domain (1024-bit for the
+- **DKIM private keys** - RSA 2048-bit per domain (1024-bit for the
   registrar-limited domain), stored under `/etc/opendkim/keys/`. Never
   published, even rotated ones.
-- **OpenDMARC configuration** (`opendmarc.conf`) — standard Debian
+- **OpenDMARC configuration** (`opendmarc.conf`) - standard Debian
   package defaults with minimal customisation. Not published to keep
   the repository focused on the genuinely customised parts.
 - **The Postfix operator maps** (`sender_checks`, `transport`,
-  `rbl_override`) — contain real partner addresses and routing data.
+  `rbl_override`) - contain real partner addresses and routing data.
   Excluded by `.gitignore`.
-- **Dynamic threat feeds** — the `iptables/ipset/rules.v4` output of
+- **Dynamic threat feeds** - the `iptables/ipset/rules.v4` output of
   the daily datashield refresh (~2.6 MB). Script output, not
   static configuration.
-- **Stock vendor files** — Rspamd `modules.d/` defaults (56 files,
+- **Stock vendor files** - Rspamd `modules.d/` defaults (56 files,
   all overridden by the `local.d/` files published here), fail2ban
   stock filter library (~150 files), Dovecot `conf.d/` defaults
   (superseded by the Dovecot 2.4.x single-file configuration model),
