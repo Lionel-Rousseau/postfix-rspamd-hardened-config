@@ -44,13 +44,15 @@ The backup chain that protects this stack lives in
 - **Bayes classifier** trained continuously through Sieve scripts
   wired to per-user IMAP folders.
 - **Full authentication chain**: SPF (record + `policyd-spf`), DKIM
-  signing per domain via OpenDKIM milter (RSA 2048-bit keys, annual
-  rotation; one legacy domain at a Korean registrar retains 1024-bit
-  due to registrar key-length cap), DMARC `p=quarantine`, OpenARC
-  1.3.0 sealing for multi-hop traffic, validation at receive time.
+  signing via OpenDKIM milter (RSA 2048-bit keys, annual rotation; one
+  legacy domain at a Korean registrar retains 1024-bit due to registrar
+  key-length cap). The platform relays 13 domains; 12 are signed locally
+  with OpenDKIM — the 13th is receive-only and not used for outbound
+  mail. DMARC `p=quarantine`, OpenARC 1.3.0 sealing for multi-hop
+  traffic, validation at receive time.
 - **TLS 1.2 minimum** with hardened cipher suites (FFDHE4096 DH
-  parameters, no export/CBC/legacy suites), DANE on outbound (TLSA
-  records), MTA-STS published and enforced.
+  parameters, no export, RC4, 3DES, MD5 or legacy protocol suites),
+  DANE on outbound (TLSA records), MTA-STS published and enforced.
 - **Abusix `authbl` on submission ports 587 / 465**: IPs known for
   authenticated spam are blocked *before* SASL credentials are
   validated, not after.

@@ -78,9 +78,15 @@ for the security trade-offs behind key choices.
    - PREGREET trap (clients that send before the banner are dropped);
    - HANGUP penalty;
    - allow / deny via `cidr:rbl_override` for the operator override layer.
-3. **smtpd** chains, in order: `mynetworks` → `permit_sasl_authenticated`
-   → `check_client_access` → `check_helo_access` →
-   `check_sender_access` → `reject_unknown_*` → DNSBL fallback.
+3. **smtpd** restriction chains, in order:
+   - `permit_mynetworks` (trusted relays bypass all checks)
+   - SASL authentication is **disabled on port 25** (MTA-to-MTA traffic
+     does not authenticate); enabled only on submission ports 587/465.
+   - `reject_sender_login_mismatch` evaluated before
+     `permit_sasl_authenticated` on submission ports, preventing
+     authenticated users from spoofing other local addresses.
+   - `check_client_access` → `check_helo_access` →
+     `check_sender_access` → `reject_unknown_*` → Abusix DNSBL fallback.
 4. **Milter chain** processes the message in order:
    - **Rspamd** (port 11332) - scores and returns `reject` / `add
      header` / `rewrite subject` / `greylist` / `accept`. Greylist via

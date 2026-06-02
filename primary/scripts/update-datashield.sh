@@ -38,7 +38,7 @@ while IFS= read -r ip; do
   [[ -z "$ip" ]]    && continue
   [[ "$ip" =~ ^# ]] && continue
   # Reject malformed lines (non-IP/CIDR content, stray headers, etc.)
-  [[ "$ip" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$ ]] || continue
+  [[ "$ip" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}(/([0-9]|[12][0-9]|3[0-2]))?$ ]] || continue
   ipset add "$TMP_SET" "$ip" -exist
 done < "$TMP_FILE"
 
