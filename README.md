@@ -1,4 +1,4 @@
-# postfix-rspamd-hardened-config
+# Production Mail Infrastructure — Postfix / Rspamd / Dovecot, Hardened
 
 > Hardened Postfix + Dovecot + Rspamd configuration set for a small
 > production mail platform with primary and secondary MX, full
