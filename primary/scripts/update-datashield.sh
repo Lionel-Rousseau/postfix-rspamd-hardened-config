@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# update-datashield.sh — daily IP threat-feed aggregator
+# update-datashield.sh - daily IP threat-feed aggregator
 #
 # Downloads the Data-Shield IPv4 blocklist, atomically swaps it into a live
 # ipset, and persists the result. Designed to run via cron (e.g. daily at 03:00).
