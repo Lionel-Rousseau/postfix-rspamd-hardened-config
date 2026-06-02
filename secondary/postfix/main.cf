@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/postfix/main.cf — secondary MX (mx-secondary.example.org)
+# /etc/postfix/main.cf - secondary MX (mx-secondary.example.org)
 # Postfix 3.x on Ubuntu 24.04 LTS
 #
 # Role: relay-only backup MX (MX priority 20). Accepts mail when primary
@@ -7,7 +7,7 @@
 # and forwards to primary when service resumes.
 #
 # Intentionally absent vs. primary:
-#   - No SASL / Dovecot  (relay-only — user submission via primary only)
+#   - No SASL / Dovecot  (relay-only - user submission via primary only)
 #   - No Rspamd milter   (anti-spam filtering applied by primary on delivery)
 #   - No virtual mailbox (no local delivery)
 #   - No postscreen DNSBL (secondary must accept from widest sender range
@@ -42,7 +42,7 @@ inet_interfaces = all
 inet_protocols  = all
 
 # ---------------------------------------------------------------------------
-# Trusted networks — primary MX IP explicitly listed for relay authorisation
+# Trusted networks : primary MX IP explicitly listed for relay authorisation
 # ---------------------------------------------------------------------------
 mynetworks = 127.0.0.0/8, [::1]/128, [fe80::]/10, [2001:db8:0:2::1]/128
 
@@ -59,7 +59,7 @@ alias_maps     = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 
 # ---------------------------------------------------------------------------
-# SMTP banner — minimal disclosure (intentionally less verbose than primary)
+# SMTP banner : minimal disclosure (intentionally less verbose than primary)
 # ---------------------------------------------------------------------------
 smtpd_banner = $myhostname ESMTP
 
@@ -82,7 +82,7 @@ html_directory   = no
 manpage_directory = /usr/share/man
 
 # ---------------------------------------------------------------------------
-# Relay domains — all 13 managed domains
+# Relay domains : all 13 managed domains
 # Anonymised: real domain names replaced with example.* placeholders.
 # Covers multiple TLDs including international registries (.kr, .aero, .sarl).
 # ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ relay_domains =
 transport_maps = hash:/etc/postfix/transport
 
 # ---------------------------------------------------------------------------
-# Queue lifetime — extended for backup MX role
+# Queue lifetime extended for backup MX role
 # Default Postfix value is 5 days. 15 days ensures mail is not discarded
 # during extended primary outages (hardware failure, datacenter maintenance).
 # ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ mailbox_size_limit    = 0
 message_size_limit    = 100000000
 
 # ---------------------------------------------------------------------------
-# Milters — intentionally absent on secondary
+# Milters : intentionally absent on secondary
 # Rspamd, OpenDKIM, OpenDMARC, and OpenARC are not deployed here.
 # Anti-spam and DKIM signing are applied by primary upon delivery.
 # Keeping this section visible documents the deliberate architecture decision.
@@ -132,7 +132,7 @@ message_size_limit    = 100000000
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# TLS server (inbound) — mirrors primary configuration
+# TLS server (inbound) : mirrors primary configuration
 # dhparam4096.pem is a locally generated FFDHE 4096-bit DH parameter file
 # (equivalent to ffdhe4096.pem on primary, different generation path).
 # ---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ tls_config_file                 = /etc/postfix/tls_config.conf
 tls_config_name                 = postfix
 
 # ---------------------------------------------------------------------------
-# TLS client (outbound) — DANE enabled, requires DNSSEC
+# TLS client (outbound) : DANE enabled, requires DNSSEC
 # ---------------------------------------------------------------------------
 smtp_tls_note_starttls_offer  = yes
 smtp_tls_loglevel             = 1
@@ -163,7 +163,7 @@ smtp_host_lookup              = dns
 smtp_tls_security_level       = dane
 
 # ---------------------------------------------------------------------------
-# Restriction evaluation — wait until RCPT TO before applying
+# Restriction evaluation : wait until RCPT TO before applying
 # ---------------------------------------------------------------------------
 smtpd_delay_reject = yes
 
@@ -204,9 +204,9 @@ smtpd_helo_restrictions =
 smtpd_data_restrictions = reject_unauth_pipelining
 
 # ---------------------------------------------------------------------------
-# Sender restrictions — intentionally relaxed vs. primary
-# reject_sender_login_mismatch: disabled — no SASL users on secondary.
-# reject_unknown_reverse/client_hostname: omitted — secondary must accept
+# Sender restrictions : intentionally relaxed vs. primary
+# reject_sender_login_mismatch: disabled, no SASL users on secondary.
+# reject_unknown_reverse/client_hostname: omitted, secondary must accept
 # from the widest possible range of senders during primary outage; stricter
 # filtering resumes when primary takes back delivery.
 # ---------------------------------------------------------------------------
@@ -240,7 +240,7 @@ smtpd_recipient_restrictions =
     permit
 
 # ---------------------------------------------------------------------------
-# TLS cipher configuration — aligned with primary
+# TLS cipher configuration : aligned with primary
 # See also: /etc/postfix/tls_config.conf
 # ---------------------------------------------------------------------------
 tls_ssl_options        = NO_COMPRESSION, NO_RENEGOTIATION
@@ -249,18 +249,18 @@ tls_preempt_cipherlist = yes
 tls_high_cipherlist   = EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+AES256:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!CAMELLIA
 tls_medium_cipherlist = ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:!aNULL:!eNULL:!SSLv2:!MD5:!DES:!EXP:!SEED:!IDEA:!3DES:!CAMELLIA
 
-# Inbound (smtpd): medium — MTA-to-MTA compatibility, mirrors primary
+# Inbound (smtpd): medium : MTA-to-MTA compatibility, mirrors primary
 smtpd_tls_ciphers          = medium
 smtpd_tls_mandatory_ciphers = medium
 
-# Outbound (smtp): high — preferred for delivery to well-configured peers
+# Outbound (smtp): high : preferred for delivery to well-configured peers
 smtp_tls_ciphers           = high
 smtp_tls_mandatory_ciphers = high
 
 smtp_tls_exclude_ciphers  = EXP, LOW, DES, 3DES, SSLv2, MD5, DES+MD5, RC4, aNULL, eNULL, EXPORT, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA, DHE-RSA-CAMELLIA256-SHA, DHE-RSA-CAMELLIA128-SHA
 smtpd_tls_exclude_ciphers = EXP, LOW, DES, 3DES, SSLv2, MD5, DES+MD5, RC4, aNULL, eNULL, EXPORT, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA, DHE-RSA-CAMELLIA256-SHA, DHE-RSA-CAMELLIA128-SHA
 
-# TLS 1.2 minimum — TLS 1.0 and 1.1 explicitly excluded
+# TLS 1.2 minimum : TLS 1.0 and 1.1 explicitly excluded
 smtpd_tls_mandatory_protocols = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
 smtpd_tls_protocols           = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
 smtp_tls_mandatory_protocols  = !TLSv1.1, !TLSv1, !SSLv2, !SSLv3
