@@ -1,0 +1,29 @@
+# /etc/postfix/sender_login_maps.pcre
+#
+# Maps each local sender address to itself as the expected SASL login name.
+# Used by reject_sender_login_mismatch to prevent authenticated users from
+# sending mail on behalf of another local account (address spoofing).
+#
+# Scoped to local domains only. External MTAs on port 25 are not affected:
+# their sender addresses do not match any entry here.
+#
+# Format: PCRE pattern    replacement
+# The replacement ($1) captures the full address and returns it as the
+# expected login — works when SASL login == email address (Dovecot virtual).
+#
+# One entry per hosted domain. Replace with your actual domain names and
+# deploy to /etc/postfix/sender_login_maps.pcre (no postmap required).
+
+/^(.+@primary-domain\.tld)$/    $1
+/^(.+@primary-domain2\.tld)$/   $1
+/^(.+@secondary-domain\.tld)$/  $1
+/^(.+@secondary-domain2\.tld)$/ $1
+/^(.+@secondary-domain3\.tld)$/ $1
+/^(.+@secondary-domain4\.tld)$/ $1
+/^(.+@client-domain1\.tld)$/    $1
+/^(.+@client-domain2\.tld)$/    $1
+/^(.+@client-domain3\.tld)$/    $1
+/^(.+@client-domain4\.tld)$/    $1
+/^(.+@client-domain5\.tld)$/    $1
+/^(.+@client-domain6\.tld)$/    $1
+/^(.+@client-domain7\.tld)$/    $1

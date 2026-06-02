@@ -1,0 +1,20 @@
+# /etc/postfix/relay_recipients
+#
+# Valid recipient addresses accepted by the secondary MX for relay.
+# Without this map, the secondary accepts any address at relay_domains,
+# generating backscatter when the primary rejects unknown users on delivery.
+#
+# This file is generated automatically by scripts/sync-relay-recipients.sh
+# from the primary mailbox tree (/home/vmail/domain.tld/user/).
+# Aliases are excluded — only real mailbox directories are listed.
+#
+# After any manual change, recompile with:
+#   postmap /etc/postfix/relay_recipients
+#
+# Format: address<TAB>OK
+
+contact@primary-domain.tld      OK
+admin@primary-domain.tld        OK
+user@primary-domain.tld         OK
+contact@domain2.tld             OK
+info@domain3.tld                OK

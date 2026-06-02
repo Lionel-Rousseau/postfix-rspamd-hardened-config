@@ -28,18 +28,23 @@ trap cleanup EXIT
 # Download blocklist
 curl -fsSL "$URL" -o "$TMP_FILE"
 
-# Populate a temporary set
-ipset create "$TMP_SET" hash:ip family inet hashsize 4096 maxelem 262144 -exist
+# Populate a temporary set.
+# hash:net handles both plain IPs and CIDR entries — the source feed may
+# include either format; hash:ip would crash on CIDR entries with set -e.
+ipset create "$TMP_SET" hash:net family inet hashsize 4096 maxelem 262144 -exist
 ipset flush  "$TMP_SET"
 
 while IFS= read -r ip; do
-  [[ -z "$ip" ]]       && continue
-  [[ "$ip" =~ ^# ]]    && continue
+  [[ -z "$ip" ]]    && continue
+  [[ "$ip" =~ ^# ]] && continue
+  # Reject malformed lines (non-IP/CIDR content, stray headers, etc.)
+  [[ "$ip" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}(/[0-9]{1,2})?$ ]] || continue
   ipset add "$TMP_SET" "$ip" -exist
 done < "$TMP_FILE"
 
-# Atomic swap: replace live set without a gap in coverage
-ipset create "$LIVE_SET" hash:ip family inet hashsize 4096 maxelem 262144 -exist
+# Atomic swap: replace live set without a gap in coverage.
+# Both sets must be hash:net — see migration note below if upgrading from hash:ip.
+ipset create "$LIVE_SET" hash:net family inet hashsize 4096 maxelem 262144 -exist
 ipset swap "$TMP_SET" "$LIVE_SET"
 ipset destroy "$TMP_SET" 2>/dev/null || true
 

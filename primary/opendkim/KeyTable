@@ -4,7 +4,9 @@
 # Format: <selector>._domainkey.<domain>  <domain>:<selector>:<keyfile>
 #
 # All keys are RSA 2048-bit except example.kr (1024-bit registrar limit).
-# Keys are rotated annually; the selector encodes the year (e.g. "mail").
+# Keys are rotated annually. Selectors are stable ("mail") unless a rollover
+# requires parallel publication, in which case a dated selector is used
+# temporarily (e.g. "mail2026") until old signatures expire from transit.
 # Anonymised: real domain names replaced with example.* placeholders.
 # =============================================================================
 

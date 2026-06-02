@@ -129,7 +129,11 @@ milter_mail_macros    = i {mail_addr} {client_addr} {client_name} {auth_authen}
 # ---------------------------------------------------------------------------
 smtpd_sasl_type                   = dovecot
 smtpd_sasl_path                   = private/auth
-smtpd_sasl_auth_enable            = yes
+# SASL authentication is disabled globally on port 25 (MTA-to-MTA traffic
+# does not require authentication). Enabled explicitly on submission (587)
+# and submissions (465) via master.cf overrides, where Abusix authbl is
+# checked before permit_sasl_authenticated.
+smtpd_sasl_auth_enable            = no
 # Enables non-standard SASL AUTH response for legacy MUAs (pre-2007 Outlook/Eudora).
 # Safe to remove if all clients are RFC 4954-compliant (modern Outlook, Thunderbird, etc.).
 broken_sasl_auth_clients          = yes
@@ -142,7 +146,9 @@ smtpd_sasl_tls_security_options   = noanonymous
 smtpd_tls_key_file              = /etc/letsencrypt/live/web-mail.example.org/privkey.pem
 smtpd_tls_cert_file             = /etc/letsencrypt/live/web-mail.example.org/fullchain.pem
 smtpd_tls_dh1024_param_file     = /etc/postfix/ffdhe4096.pem
-smtpd_tls_dh512_param_file      = /etc/postfix/dh512.pem
+# smtpd_tls_dh512_param_file is omitted: export-grade DHE is excluded via
+# smtpd_tls_exclude_ciphers (EXP) and this parameter is ignored by Postfix
+# 3.6+ when compatibility_level >= 3.6. No dh512 file is needed.
 tls_eecdh_auto_curves           = X25519, prime256v1, secp384r1, X448, secp521r1
 tls_eecdh_strong_curve          = prime256v1
 tls_eecdh_ultra_curve           = secp384r1
@@ -207,13 +213,25 @@ smtpd_data_restrictions =
     reject_unauth_pipelining
 
 # ---------------------------------------------------------------------------
+# SASL sender login map (PCRE) — maps each local sender address to itself.
+# Required for reject_sender_login_mismatch to function.
+# Scoped to local domains only: external MTAs on port 25 are unaffected.
+# See: primary/postfix/sender_login_maps.pcre.example
+# ---------------------------------------------------------------------------
+smtpd_sender_login_maps = pcre:/etc/postfix/sender_login_maps.pcre
+
+# ---------------------------------------------------------------------------
 # Sender restrictions
 # ---------------------------------------------------------------------------
 smtpd_sender_restrictions =
     permit_mynetworks,
+    # reject_sender_login_mismatch is evaluated before permit_sasl_authenticated
+    # so that authenticated users cannot spoof another local account's address.
+    # The PCRE map is scoped to local domains — external MTAs on port 25 are
+    # not affected (their sender addresses do not match the map).
+    reject_sender_login_mismatch,
     permit_sasl_authenticated,
     check_sender_access hash:/etc/postfix/sender_allow_internal,
-    reject_sender_login_mismatch,
     reject_unknown_sender_domain,
     reject_invalid_hostname,
     reject_unknown_reverse_client_hostname,

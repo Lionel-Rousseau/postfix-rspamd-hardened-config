@@ -22,8 +22,8 @@ goes back to 2001: sendmail → Postfix 2003 → SpamAssassin → Rspamd →
 Spamhaus → Spamhaus DQS → Abusix Mail Intelligence, several rewrites
 and provider migrations later). It serves a 24/7 e-commerce activity
 with international exchanges, manages 13 domains, processes ~170
-messages per day, and has run with **zero security incidents** and
-**zero direct blacklisting** over its lifetime. The platform did face
+messages per day, and has run with **no identified security breach and no direct IP
+blacklisting** over the observed operating period. The platform did face
 occasional OVH multi-tenant IP block listings, managed by proactive
 DNSWL registration and partner whitelisting.
 
@@ -76,8 +76,11 @@ records negotiating TLSv1.3 / TLS_AES_256_GCM_SHA384 as of May 2026.
 ```
 postfix-rspamd-hardened-config/
 ├── README.md
-├── LICENSE                            MIT for code, CC-BY-SA 4.0 for docs
-├── .gitignore                         Explicitly excludes keys, maps, dynamic feeds
+├── LICENSE                            MIT (scripts)
+├── LICENSE-DOCS                       CC-BY-SA 4.0 (configuration files and docs)
+├── SECURITY.md                        Responsible disclosure contact
+├── VALIDATION.md                      Validation commands (postfix/rspamd/dovecot/f2b)
+├── .gitignore                         Excludes keys, maps, dynamic feeds, secrets
 ├── docs/
 │   ├── architecture.md                Topology, inbound/outbound flows
 │   ├── dns-records.md                 Full record inventory, TLSA maintenance strategy
@@ -99,7 +102,8 @@ postfix-rspamd-hardened-config/
 │   ├── postfix/
 │   │   ├── main.cf                    Restriction chains, postscreen, TLS, DANE, milters
 │   │   ├── master.cf                  Ports 25/587/465 with authbl pre-AUTH check
-│   │   └── tls_config.conf            OpenSSL signature algorithm policy
+│   │   ├── tls_config.conf            OpenSSL signature algorithm policy
+│   │   └── sender_login_maps.pcre.example  PCRE map template for sender login mismatch
 │   ├── rspamd/
 │   │   └── local.d/
 │   │       ├── antivirus.conf         ClamAV via Unix socket, EICAR test support
@@ -109,11 +113,13 @@ postfix-rspamd-hardened-config/
 │   │       ├── rbl.conf               Abusix (active) + Spamhaus DQS (retired, commented)
 │   │       └── settings.conf          Root@ notification exceptions - primary + secondary
 │   └── scripts/
-│       └── update-datashield.sh       Daily IP threat-feed → atomic ipset swap
+│       ├── update-datashield.sh       Daily IP threat-feed → atomic ipset swap (hash:net)
+│       └── sync-relay-recipients.sh   Sync valid recipients to secondary MX (anti-backscatter)
 ├── secondary/
 │   └── postfix/
 │       ├── main.cf                    Relay-only, 13-domain, 15d queue, relaxed policy
-│       └── master.cf                  Ports 587/465 disabled with rationale
+│       ├── master.cf                  Ports 587/465 disabled with rationale
+│       └── relay_recipients.example   Recipient map template for backscatter prevention
 └── fail2ban/
     ├── jail.d/
     │   └── custom.conf                All active jails - progressive ban, Cloudflare,
@@ -123,7 +129,7 @@ postfix-rspamd-hardened-config/
     │   └── f2b-postfix-subnet.conf    Escalates postfix-sasl bans to /24 subnet
     └── action.d/
         ├── ipset-subnet24.conf        /24 subnet block via ipset hash:net
-        └── cloudflare-token.conf      Cloudflare firewall API integration
+        └── cloudflare-token.conf      Cloudflare firewall API integration (Bearer token)
 ```
 
 ## Highlights: what to look at first

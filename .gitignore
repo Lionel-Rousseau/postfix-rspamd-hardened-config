@@ -14,6 +14,8 @@ opendkim/keys/
 
 # Operator-data files (replaced with .example stubs in this repo)
 sender_checks
+sender_login_maps.pcre
+relay_recipients
 transport
 rbl_override
 dmarc_whitelist.inc
