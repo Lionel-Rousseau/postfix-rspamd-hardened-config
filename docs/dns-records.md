@@ -51,21 +51,20 @@ Two strategies, from simplest to most robust:
 
 ---
 
-### Strategy A — Key reuse (zero maintenance)
+### Strategy A — Key reuse (production choice, zero maintenance)
 
-Configure certbot to reuse the existing private key on each renewal. The
-public key never changes, the TLSA hash never changes, the DNS record is
-set once and never touched.
+Both MX hosts use ECDSA P-256 certificates (`key_type = ecdsa`,
+`elliptic_curve = secp256r1`) with `reuse_key = True`. The private key
+is never regenerated on renewal, so the TLSA hash is stable for the
+lifetime of the key — the DNS record is set once and never touched.
 
-```ini
-# /etc/letsencrypt/renewal/web-mail.example.org.conf
-[renewalparams]
-reuse_key = True
-```
+See [`docs/examples/certbot-renewal.conf.example`](examples/certbot-renewal.conf.example)
+for the full renewal configuration.
 
-Or pass `--reuse-key` on the command line.
+**Computing the TLSA hash (once, at initial setup):**
 
-**Computing the TLSA hash (once, at setup):**
+The hash command works identically for ECDSA and RSA keys — it hashes
+the DER-encoded SubjectPublicKeyInfo regardless of key type.
 
 ```bash
 openssl x509 -in /etc/letsencrypt/live/web-mail.example.org/cert.pem \
@@ -78,59 +77,40 @@ openssl x509 -in /etc/letsencrypt/live/web-mail.example.org/cert.pem \
 Publish the result as `3 1 1 <hash>` at `_25._tcp.web-mail.example.org`.
 The secondary MX gets its own record at `_25._tcp.mx-secondary.example.org`.
 
+**Cryptographic note:** ECDSA P-256 (`secp256r1`) is consistent with the
+ECDH curve preferences in Postfix (`tls_eecdh_strong_curve = prime256v1`)
+and Dovecot (`ssl_curve_list = X25519:prime256v1:secp384r1`). The choice
+is coherent across the entire TLS stack.
+
 **Trade-off:** the private key never rotates. For SMTP, TLS session
 confidentiality comes from ECDHE (ephemeral keys), not from the certificate
-key — so a long-lived certificate key does not compromise past sessions.
-The risk is impersonation if the key is ever extracted. For a small
-mail platform without dedicated HSM or PKI team, this is the right
-operational choice.
+key — so a long-lived certificate key does not compromise past session
+confidentiality. The risk is limited to impersonation if the key is
+extracted. For a small mail platform without a dedicated PKI rotation
+procedure, this is the right operational choice.
 
 ---
 
 ### Strategy B — Automated TLSA update via Infomaniak API
 
 For environments where key rotation is required (compliance, policy),
-a certbot deploy hook updates the TLSA record automatically after each
-renewal.
+a certbot deploy hook can update TLSA records automatically via the
+Infomaniak DNS API after each renewal.
 
-The hook is in `primary/scripts/update-tlsa-infomaniak.sh`.
+**Approach:** on cert renewal, the hook computes the SHA-256 hash of the
+new public key, calls `POST /1/domain/{id}/dns/record` to add the new
+TLSA record, then removes the old one. The Infomaniak API uses Bearer
+token authentication; the domain ID is retrieved once via
+`GET /1/product?service_name=domain`.
 
-**How it works:**
+**Timing note (RFC 7671):** the safe rollover sequence is: add new TLSA →
+wait for TTL expiry → deploy new cert → remove old TLSA. A simplified
+deploy hook (add then remove in the same run) works in practice because
+SMTP DANE failures cause deferred delivery (`tempfail`), not permanent
+rejection, and a TLSA TTL of 300 s limits the mismatch window.
 
-1. Certbot renews the cert and calls deploy hooks from
-   `/etc/letsencrypt/renewal-hooks/deploy/`
-2. The hook computes the SHA-256 hash of the new certificate's public key
-3. It calls the Infomaniak API to add the new TLSA record
-4. It removes the old TLSA record(s) that no longer match
-
-**Important timing note:** per RFC 7671, the ideal rollover pre-publishes
-the new TLSA record *before* the cert is deployed and waits for DNS TTL
-expiry. The deploy hook approach is a simplified version that works in
-practice because:
-- SMTP DANE failures cause deferred delivery (`tempfail`), not permanent rejection
-- With a low TLSA TTL (300 s), propagation is near-immediate
-- The new record is added *before* old records are removed
-
-**Setup:**
-
-```bash
-# 1. Create an API token at https://manager.infomaniak.com/v3/infomaniak-api
-#    Scope: "Domain" (read + write)
-
-# 2. Store the token
-echo "INFOMANIAK_API_TOKEN=<your-token>" > /etc/default/certbot-tlsa
-chmod 600 /etc/default/certbot-tlsa
-
-# 3. Install the hook
-cp primary/scripts/update-tlsa-infomaniak.sh \
-   /etc/letsencrypt/renewal-hooks/deploy/update-tlsa
-chmod 755 /etc/letsencrypt/renewal-hooks/deploy/update-tlsa
-
-# 4. Dry-run test
-RENEWED_LINEAGE=/etc/letsencrypt/live/web-mail.example.org \
-RENEWED_DOMAINS="web-mail.example.org" \
-  /etc/letsencrypt/renewal-hooks/deploy/update-tlsa --dry-run
-```
+A deploy hook script for this platform is in development and will be
+published after production validation.
 
 ---
 
