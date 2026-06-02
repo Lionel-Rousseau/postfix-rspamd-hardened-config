@@ -1,0 +1,63 @@
+# =============================================================================
+# docs/examples/perso.conf.example
+#
+# Template snippets for local.d/perso.conf — site-specific Rspamd overrides.
+# Copy the relevant block into /etc/rspamd/local.d/perso.conf and adjust to
+# your environment. Do not use in production without review.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Pattern: lift greylisting and rejection for authenticated users on known
+# outbound IP ranges (e.g. a trusted relay, a CI/CD sender, a monitoring host).
+#
+# When to use: you have a set of SASL-authenticated senders on fixed IPs that
+# trigger greylisting because they send in bursts or have unusual header patterns.
+# Applying this exemption only when BOTH authenticated=yes AND ip matches
+# avoids creating a blanket whitelist based on IP alone.
+# ---------------------------------------------------------------------------
+# internal_outbound_auth {
+#   priority = high;
+#   authenticated = yes;
+#   user = ["user1@example.org", "user2@example.org"];
+#   ip = ["2001:db8::/64", "192.0.2.10"];
+#
+#   apply {
+#     actions {
+#       reject   = null;    # lift hard reject threshold
+#       "add header" = null; # lift soft-spam header injection
+#       greylist = null;    # lift greylisting delay
+#     }
+#   }
+# }
+
+# ---------------------------------------------------------------------------
+# Pattern: suppress specific symbols for a known-safe automated sender.
+#
+# Context: the logwatch_local block in perso.conf uses this approach for
+# Logwatch cron reports. Adapt the header patterns and symbol list to your
+# own automated sender (monitoring alerts, backup notifications, etc.).
+#
+# Best practice: always add a negative custom symbol (score ≤ -10.0) so the
+# exemption is visible in the X-Spamd-Result header for audit purposes.
+# ---------------------------------------------------------------------------
+# my_automated_sender {
+#   priority = 900;
+#   from_mime = "noreply@example.org";
+#   ip = "127.0.0.1";
+#
+#   header = {
+#     "X-Mailer" = "^MyApp-Mailer";
+#   }
+#
+#   apply {
+#     symbols_disabled = ["BAYES_SPAM", "URIBL_GREY"];
+#     actions {
+#       reject          = 100.0;
+#       "rewrite subject" = 100.0;
+#       "add header"    = 100.0;
+#     }
+#     MY_AUTOMATED_SENDER_OK = -15.0;
+#   }
+#
+#   symbols = ["MY_AUTOMATED_SENDER_OK"];
+# }

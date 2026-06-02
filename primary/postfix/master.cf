@@ -1,0 +1,89 @@
+# =============================================================================
+# /etc/postfix/master.cf — primary MX (web-mail.example.org)
+# Postfix 3.x on Ubuntu 24.04 LTS
+# =============================================================================
+
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (no)    (never) (100)
+# ==========================================================================
+
+# --- Port 25 inbound — postscreen front-end ---
+# postscreen handles DNSBL pre-scoring and PREGREET trap before smtpd.
+# dnsblog/tlsproxy support postscreen async DNS lookups and TLS proxying.
+smtp      inet  n       -       y       -       1       postscreen
+smtpd     pass  -       -       y       -       -       smtpd
+dnsblog   unix  -       -       y       -       0       dnsblog
+tlsproxy  unix  -       -       y       -       0       tlsproxy
+
+# --- Port 587 — submission (STARTTLS / RFC 6409) ---
+# TLS required (encrypt-level). SASL required.
+# smtpd_relay_restrictions: Abusix authbl checked BEFORE permit_sasl_authenticated
+# to reject IPs known for authenticated spam submission even if credentials are valid.
+# helo/sender/recipient restrictions cleared — handled upstream by the policy.
+submission inet n       -       n       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+  -o tls_preempt_cipherlist=yes
+  -o smtpd_sasl_auth_enable=yes
+  -o { smtpd_relay_restrictions=permit_mynetworks,reject_rbl_client <ABUSIX-API-KEY>.authbl.mail.abusix.zone,permit_sasl_authenticated,reject }
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_helo_restrictions=
+  -o smtpd_sender_restrictions=
+  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
+  -o milter_macro_daemon_name=ORIGINATING
+
+# --- Port 465 — submissions (implicit TLS / RFC 8314) ---
+# RFC 8314 service name "submissions" (not the legacy "smtps").
+# TLS wrapper mode — TLS negotiated before any SMTP dialogue.
+# Same Abusix authbl pre-authentication check as port 587.
+submissions inet n      -       n       -       -       smtpd
+  -o syslog_name=postfix/submissions
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_sasl_auth_enable=yes
+  -o { smtpd_relay_restrictions=permit_mynetworks,reject_rbl_client <ABUSIX-API-KEY>.authbl.mail.abusix.zone,permit_sasl_authenticated,reject }
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_helo_restrictions=
+  -o smtpd_sender_restrictions=
+  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
+  -o milter_macro_daemon_name=ORIGINATING
+
+# --- Core internal services ---
+pickup    unix  n       -       y       60      1       pickup
+cleanup   unix  n       -       y       -       0       cleanup
+qmgr      unix  n       -       n       300     1       qmgr
+tlsmgr    unix  -       -       y       1000?   1       tlsmgr
+rewrite   unix  -       -       y       -       -       trivial-rewrite
+bounce    unix  -       -       y       -       0       bounce
+defer     unix  -       -       y       -       0       bounce
+trace     unix  -       -       y       -       0       bounce
+verify    unix  -       -       y       -       1       verify
+flush     unix  n       -       y       1000?   0       flush
+
+# --- SPF policy daemon ---
+policyd-spf unix -      n       n       -       0       spawn
+    user=nobody argv=/usr/bin/policyd-spf /etc/postfix-policyd-spf-python/policyd-spf.conf
+
+# --- Proxy and outbound delivery ---
+proxymap  unix  -       -       n       -       -       proxymap
+proxywrite unix -       -       n       -       1       proxymap
+smtp      unix  -       -       y       -       -       smtp
+relay     unix  -       -       y       -       -       smtp
+        -o syslog_name=postfix/$service_name
+showq     unix  n       -       y       -       -       showq
+error     unix  -       -       y       -       -       error
+retry     unix  -       -       y       -       -       error
+discard   unix  -       -       y       -       -       discard
+local     unix  -       n       n       -       -       local
+virtual   unix  -       n       n       -       -       virtual
+lmtp      unix  -       -       y       -       -       lmtp
+anvil     unix  -       -       y       -       1       anvil
+scache    unix  -       -       y       -       1       scache
+postlog   unix-dgram n  -       n       -       1       postlogd
+
+# --- Dovecot LDA pipe (server-side Sieve filtering) ---
+# Used for delivery paths requiring Sieve rule execution (server-side filters,
+# vacation responses, folder sorting). Primary virtual delivery uses LMTP
+# (virtual_transport = lmtp:unix:private/dovecot-lmtp in main.cf).
+dovecot   unix  -       n       n       -       -       pipe
+    flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver -f ${sender} -d ${recipient}

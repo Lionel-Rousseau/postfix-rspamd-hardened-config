@@ -23,7 +23,7 @@ exists for **continuity**, not capacity.
                       │  ─────────────────────────────────  │
                       │  iptables (datashield aggregator)   │
                       │   ↓                                 │
-                      │  Postfix postscreen :25 / :465      │
+                      │  Postfix postscreen :25             │
                       │   ↓                                 │
                       │  Postfix smtpd                      │
                       │   ↓                                 │
@@ -63,8 +63,9 @@ exists for **continuity**, not capacity.
 | `_smtp._tls` (TLS-RPT)                  | Aggregate TLS-RPT to a dedicated mailbox    |
 | `CAA`                                   | `letsencrypt.org` only                      |
 
-See [`auth-chain.md`](auth-chain.md) for the rationale and rotation
-procedures.
+See [`hardening-decisions.md`](hardening-decisions.md) for the
+rationale behind key choices (DANE vs MTA-STS, TLS policy on port 25,
+DKIM key sizes).
 
 ## Inbound flow (primary)
 
@@ -79,9 +80,14 @@ procedures.
 3. **smtpd** chains, in order: `mynetworks` → `permit_sasl_authenticated`
    → `check_client_access` → `check_helo_access` →
    `check_sender_access` → `reject_unknown_*` → DNSBL fallback.
-4. **Rspamd milter** scores the message; the action chain returns one
-   of: `reject`, `add header`, `rewrite subject`, `greylist`, `accept`.
-   Greylist works through a Redis store, lifetime 1h.
+4. **Milter chain** processes the message in order:
+   - **Rspamd** (port 11332) — scores and returns `reject` / `add
+     header` / `rewrite subject` / `greylist` / `accept`. Greylist via
+     Redis, lifetime 1 h.
+   - **OpenDKIM** (port 8891) — verifies DKIM signatures on inbound.
+   - **OpenDMARC** (port 8893) — evaluates DMARC alignment and
+     disposition.
+   - **OpenARC** (port 8894) — validates the inbound ARC chain.
 5. Accepted mail goes to the **Postfix queue** then **Dovecot LMTP**
    for final delivery.
 
@@ -89,21 +95,26 @@ procedures.
 
 1. Authenticated submission on **port 587 (STARTTLS)** or **465
    (implicit TLS)** via `smtpd_tls_security_level=encrypt`.
-2. Rspamd milter on outbound too. A final filter against accidentally
-   forwarding malware in replies, plus DKIM signing via the
-   `dkim_signing` module.
-3. OpenARC seals a Authentication-Results chain when the message
-   transits multiple administrative domains (relay through a
-   third-party relay for some destinations).
-4. Postfix `smtp` client honours **DANE** (TLSA records) on
-   destinations that publish them, and falls back to `dane-only`
-   strict where the domain is on our MTA-STS receiver list.
+2. The same four-milter chain runs on outbound:
+   - **Rspamd** — final content filter against accidental malware
+     forwarding.
+   - **OpenDKIM** — DKIM signing, one key per managed domain
+     (RSA 2048-bit, annual rotation).
+   - **OpenDMARC** — outbound DMARC reporting.
+   - **OpenARC 1.3.0** — seals the ARC chain when the message transits
+     multiple administrative domains.
+3. Postfix `smtp` client honours **DANE** (TLSA records) on
+   destinations that publish them under DNSSEC, and falls back to
+   opportunistic TLS for others.
 
 ## Secondary (relay-only)
 
 The secondary MX accepts mail when the primary is unreachable, queues
 it, and delivers to the primary as soon as it comes back. Configuration
-is deliberately minimal, see [`secondary/README.md`](../secondary/README.md)
-for the relay-only setup. It does **not** run Rspamd, Dovecot, or any
-local user-facing service: those would be liabilities during a
-primary-host incident, not assets.
+is deliberately minimal — see
+[`secondary/postfix/main.cf`](../secondary/postfix/main.cf) and
+[`secondary/postfix/master.cf`](../secondary/postfix/master.cf).
+It does **not** run Rspamd, Dovecot, or any local user-facing service:
+those would be liabilities during a primary-host incident, not assets.
+The rationale is detailed in
+[`hardening-decisions.md`](hardening-decisions.md).

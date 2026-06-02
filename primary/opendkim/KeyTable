@@ -1,0 +1,28 @@
+# =============================================================================
+# /etc/opendkim/KeyTable — DKIM key lookup table
+#
+# Format: <selector>._domainkey.<domain>  <domain>:<selector>:<keyfile>
+#
+# All keys are RSA 2048-bit except example.kr (1024-bit — registrar limit).
+# Keys are rotated annually; the selector encodes the year (e.g. "mail").
+# Anonymised: real domain names replaced with example.* placeholders.
+# =============================================================================
+
+# Legacy default selector for example.org — retained for continuity with
+# messages that may still reference the old selector in transit.
+default._domainkey.example.org  example.org:default:/etc/opendkim/keys/default.private
+
+# Per-domain keys (RSA 2048-bit unless noted)
+mail._domainkey.example.org       example.org:mail:/etc/opendkim/keys/example.org/mail.private
+mail._domainkey.example.fr        example.fr:mail:/etc/opendkim/keys/example.fr/mail.private
+mail._domainkey.example.net       example.net:mail:/etc/opendkim/keys/example.net/mail.private
+mail._domainkey.example.eu        example.eu:mail:/etc/opendkim/keys/example.eu/mail.private
+mail._domainkey.example-shop.net  example-shop.net:mail:/etc/opendkim/keys/example-shop.net/mail.private
+mail._domainkey.example-commerce.fr  example-commerce.fr:mail:/etc/opendkim/keys/example-commerce.fr/mail.private
+mail._domainkey.example-commerce.com example-commerce.com:mail:/etc/opendkim/keys/example-commerce.com/mail.private
+mail._domainkey.example-marine.net   example-marine.net:mail:/etc/opendkim/keys/example-marine.net/mail.private
+# RSA 1024-bit — registrar (Korean provider) does not support longer keys
+mail._domainkey.example.kr        example.kr:mail:/etc/opendkim/keys/example.kr/mail.private
+mail._domainkey.example.aero      example.aero:mail:/etc/opendkim/keys/example.aero/mail.private
+mail._domainkey.example.sarl      example.sarl:mail:/etc/opendkim/keys/example.sarl/mail.private
+mail._domainkey.example.tours     example.tours:mail:/etc/opendkim/keys/example.tours/mail.private

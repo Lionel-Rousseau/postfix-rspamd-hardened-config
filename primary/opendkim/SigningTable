@@ -1,0 +1,23 @@
+# =============================================================================
+# /etc/opendkim/SigningTable — DKIM signing selector map
+#
+# Format: *@<domain>  <selector>._domainkey.<domain>
+#
+# Wildcard (*@) matching requires SigningTable to be loaded with "refile:"
+# prefix in opendkim.conf (not "file:"). Each domain maps to its "mail"
+# selector entry in KeyTable.
+# Anonymised: real domain names replaced with example.* placeholders.
+# =============================================================================
+
+*@example.org          mail._domainkey.example.org
+*@example.fr           mail._domainkey.example.fr
+*@example.net          mail._domainkey.example.net
+*@example.eu           mail._domainkey.example.eu
+*@example-shop.net     mail._domainkey.example-shop.net
+*@example-commerce.fr  mail._domainkey.example-commerce.fr
+*@example-commerce.com mail._domainkey.example-commerce.com
+*@example-marine.net   mail._domainkey.example-marine.net
+*@example.kr           mail._domainkey.example.kr
+*@example.aero         mail._domainkey.example.aero
+*@example.sarl         mail._domainkey.example.sarl
+*@example.tours        mail._domainkey.example.tours
