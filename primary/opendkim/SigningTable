@@ -1,5 +1,5 @@
 # =============================================================================
-# /etc/opendkim/SigningTable — DKIM signing selector map
+# /etc/opendkim/SigningTable - DKIM signing selector map
 #
 # Format: *@<domain>  <selector>._domainkey.<domain>
 #
