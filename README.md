@@ -21,7 +21,7 @@ I have administered in autonomy since 2018 (the configuration lineage
 goes back to 2001: sendmail → Postfix 2003 → SpamAssassin → Rspamd →
 Spamhaus → Spamhaus DQS → Abusix Mail Intelligence, several rewrites
 and provider migrations later). It serves a 24/7 e-commerce activity
-with international exchanges, manages 13 domains, processes ~170
+with international exchanges, manages 13 domains, processes 150/200
 messages per day, and has run with **zero security incidents** and
 **zero direct blacklisting** over its lifetime. The platform did face
 occasional OVH multi-tenant IP block listings, managed by proactive
