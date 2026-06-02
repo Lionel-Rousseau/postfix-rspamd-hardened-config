@@ -1,4 +1,4 @@
-# Production Mail Infrastructure : Postfix / Rspamd / Dovecot, Hardened
+# postfix-rspamd-hardened-config
 
 > Hardened Postfix + Dovecot + Rspamd configuration set for a small
 > production mail platform with primary and secondary MX, full
@@ -21,7 +21,7 @@ I have administered in autonomy since 2018 (the configuration lineage
 goes back to 2001: sendmail → Postfix 2003 → SpamAssassin → Rspamd →
 Spamhaus → Spamhaus DQS → Abusix Mail Intelligence, several rewrites
 and provider migrations later). It serves a 24/7 e-commerce activity
-with international exchanges, manages 13 domains, processes 150/200
+with international exchanges, manages 13 domains, processes ~170
 messages per day, and has run with **zero security incidents** and
 **zero direct blacklisting** over its lifetime. The platform did face
 occasional OVH multi-tenant IP block listings, managed by proactive
@@ -79,11 +79,14 @@ postfix-rspamd-hardened-config/
 ├── LICENSE                            MIT for code, CC-BY-SA 4.0 for docs
 ├── .gitignore                         Explicitly excludes keys, maps, dynamic feeds
 ├── docs/
-│   ├── architecture.md                Topology, DNS records, inbound/outbound flows
+│   ├── architecture.md                Topology, inbound/outbound flows
+│   ├── dns-records.md                 Full record inventory, TLSA maintenance strategy
+│   │                                  (key reuse vs. API automation), SPF, MTA-STS, CAA
 │   ├── hardening-decisions.md         Rationale for 11 non-obvious choices
-│   ├── mecsa-report-summary.png       MECSA 5.0/5 verification screenshot (May 2026)
+│   ├── mecsa-report.png               MECSA 5.0/5 — 100/100 all criteria (May 2026)
 │   └── examples/
-│       └── perso.conf.example         Rspamd local.d template snippets
+│       ├── certbot-renewal.conf.example  Renewal config — ECDSA P-256, reuse_key
+│       └── perso.conf.example            Rspamd local.d template snippets
 ├── primary/
 │   ├── openarc.conf                   OpenARC 1.3.0 — ARC sealing, RSA 2048-bit
 │   ├── dovecot/
