@@ -219,9 +219,11 @@ since 2001 (across migrations from sendmail to Postfix, SpamAssassin
 to Rspamd, and several DNSBL providers). The configuration choices,
 threat-model decisions, and operational patterns are the author's,
 accumulated over twenty-five years of running mail infrastructure.
-The work of distilling, anonymising, restructuring, and documenting
-these artefacts for public release was assisted by Claude (Anthropic).
-Every file was reviewed and validated by the author before publication.
+The anonymisation of the data shown and the formatting of the code 
+and text for publication were carried out with the assistance of 
+Claude (Anthropic). Everything was reviewed and validated by the 
+author before publication. The original code, the architecture, 
+and the technical choices are entirely the author's.
 
 ## License
 
